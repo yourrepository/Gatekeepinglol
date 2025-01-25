@@ -9,6 +9,9 @@ local playerCharacters = workspace:WaitForChild("PlayerCharacters")
 -- Maximum allowed distance
 local MAX_DISTANCE = 12
 
+-- Toggle variable
+_G.AutoParryEnabled = not _G.AutoParryEnabled -- Toggles between true and false each time the script is executed
+
 -- Function to check if an animation is monitored
 local animationSet = {} -- Animation set for lookup
 local function isMonitoredAnimation(animationId)
@@ -17,7 +20,8 @@ end
 
 -- Add animation IDs to the animation set (Example: Add them programmatically or replace with your list)
 for _, id in ipairs({
-        "rbxassetid://13458932087",
+    -- Add your animation IDs here
+      "rbxassetid://13458932087",
 "rbxassetid://13458929077",
 "rbxassetid://13458927861",
 "rbxassetid://11696678844",
@@ -291,49 +295,66 @@ for _, id in ipairs({
 end
 
 -- Optimize delay in detecting animations and pressing "F"
-RunService.Heartbeat:Connect(function()
-    local closestPlayer = nil
-    local closestDistance = math.huge
+local connection
+local function startAutoParry()
+    connection = RunService.Heartbeat:Connect(function()
+        if not _G.AutoParryEnabled then
+            if connection then connection:Disconnect() end
+            return
+        end
 
-    -- Get the position of the local player
-    local localCharacter = localPlayer.Character or localPlayer.CharacterAdded:Wait()
-    local localHumanoidRootPart = localCharacter:FindFirstChild("HumanoidRootPart")
-    if not localHumanoidRootPart then return end
-    local localPosition = localHumanoidRootPart.Position
+        local closestPlayer = nil
+        local closestDistance = math.huge
 
-    -- Find the closest player within the maximum distance
-    for _, player in ipairs(Players:GetPlayers()) do
-        if player ~= localPlayer then
-            local character = playerCharacters:FindFirstChild(player.Name)
-            local humanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
-            if humanoidRootPart then
-                local distance = (localPosition - humanoidRootPart.Position).Magnitude
-                if distance < closestDistance and distance <= MAX_DISTANCE then
-                    closestPlayer = player
-                    closestDistance = distance
+        -- Get the position of the local player
+        local localCharacter = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+        local localHumanoidRootPart = localCharacter:FindFirstChild("HumanoidRootPart")
+        if not localHumanoidRootPart then return end
+        local localPosition = localHumanoidRootPart.Position
+
+        -- Find the closest player within the maximum distance
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= localPlayer then
+                local character = playerCharacters:FindFirstChild(player.Name)
+                local humanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
+                if humanoidRootPart then
+                    local distance = (localPosition - humanoidRootPart.Position).Magnitude
+                    if distance < closestDistance and distance <= MAX_DISTANCE then
+                        closestPlayer = player
+                        closestDistance = distance
+                    end
                 end
             end
         end
-    end
 
-    -- Monitor animations on the closest player within the maximum distance
-    if closestPlayer then
-        local closestCharacter = playerCharacters:FindFirstChild(closestPlayer.Name)
-        local humanoid = closestCharacter and closestCharacter:FindFirstChildOfClass("Humanoid")
-        local animator = humanoid and humanoid:FindFirstChildOfClass("Animator")
-        if animator then
-            for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
-                if isMonitoredAnimation(track.Animation.AnimationId) then
-                    -- Simulate pressing "F"
-                    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, nil)
-                    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, nil)
-                    
-                    -- Debugging: Print the distance when "F" is pressed
-                    print("Pressed F for player:", closestPlayer.Name, "Distance:", closestDistance)
-                    
-                    break
+        -- Monitor animations on the closest player within the maximum distance
+        if closestPlayer then
+            local closestCharacter = playerCharacters:FindFirstChild(closestPlayer.Name)
+            local humanoid = closestCharacter and closestCharacter:FindFirstChildOfClass("Humanoid")
+            local animator = humanoid and humanoid:FindFirstChildOfClass("Animator")
+            if animator then
+                for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+                    if isMonitoredAnimation(track.Animation.AnimationId) then
+                        -- Simulate pressing "F"
+                        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, nil)
+                        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, nil)
+
+                        -- Debugging: Print the distance when "F" is pressed
+                        print("Pressed F for player:", closestPlayer.Name, "Distance:", closestDistance)
+
+                        break
+                    end
                 end
             end
         end
-    end
-end)
+    end)
+end
+
+-- Start or stop the script based on the toggle
+if _G.AutoParryEnabled then
+    print("AutoParry Enabled")
+    startAutoParry()
+else
+    print("AutoParry Disabled")
+    if connection then connection:Disconnect() end
+end
