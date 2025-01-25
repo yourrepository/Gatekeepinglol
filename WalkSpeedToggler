@@ -1,0 +1,32 @@
+function isNumber(str)
+    if tonumber(str) ~= nil or str == 'inf' then
+        return true
+    end
+end
+
+local tspeed = 0.3
+local hb = game:GetService("RunService").Heartbeat
+local tpwalking = _G.tpwToggle or true -- Check if the toggle exists, otherwise default to true
+local player = game:GetService("Players")
+local lplr = player.LocalPlayer
+local chr = lplr.Character
+local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+local UIS = game:GetService("UserInputService") -- UserInputService for toggle and key input
+
+-- Define a global toggle function
+_G.toggleTPWalking = function()
+    tpwalking = not tpwalking
+    _G.tpwToggle = tpwalking -- Save the state globally
+    print("TPWalking toggled:", tpwalking)
+end
+
+-- Main loop for tpwalking
+while hb:Wait() and chr and hum and hum.Parent do
+    if tpwalking and hum.MoveDirection.Magnitude > 0 then
+        if tspeed and isNumber(tspeed) then
+            chr:TranslateBy(hum.MoveDirection * tonumber(tspeed))
+        else
+            chr:TranslateBy(hum.MoveDirection)
+        end
+    end
+end
