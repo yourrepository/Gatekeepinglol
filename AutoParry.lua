@@ -4,7 +4,7 @@ local VirtualInputManager = game:GetService("VirtualInputManager")
 local HttpService = game:GetService("HttpService")
 
 -- Toggle state
-_G.isToggled = _G.isToggled or false -- false is enabled and true is disabled
+_G.isToggled = _G.isToggled or false -- false is disabled, true is enabled
 
 -- Function to toggle the script on or off
 local function toggleScript(state)
@@ -14,10 +14,6 @@ end
 
 -- Call this to toggle the script dynamically
 toggleScript(not _G.isToggled)
-
--- Current player
-local localPlayer = Players.LocalPlayer
-local playerCharacters = workspace:WaitForChild("PlayerCharacters")
 
 -- Maximum allowed distance
 local MAX_DISTANCE = 10
@@ -43,9 +39,25 @@ local function isMonitoredAnimation(animationId)
     return animationSet[animationId] ~= nil
 end
 
--- Cache the local character and its humanoid root part
+-- Local player and workspace character folder
+local localPlayer = Players.LocalPlayer
+local playerCharacters = workspace:WaitForChild("PlayerCharacters")
+
+-- Cache local character and humanoid root part
 local localCharacter = localPlayer.Character or localPlayer.CharacterAdded:Wait()
 local localHumanoidRootPart = localCharacter:WaitForChild("HumanoidRootPart")
+
+-- Update local character and root part on respawn
+localPlayer.CharacterAdded:Connect(function(character)
+    localCharacter = character
+    localHumanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    print("Local character updated on respawn")
+end)
+
+-- Monitor new players
+Players.PlayerAdded:Connect(function(player)
+    print("New player added:", player.Name)
+end)
 
 -- Optimize detection loop
 RunService.Heartbeat:Connect(function()
@@ -53,20 +65,21 @@ RunService.Heartbeat:Connect(function()
 
     local closestPlayer = nil
     local closestDistance = MAX_DISTANCE
-
     local localPosition = localHumanoidRootPart.Position
 
-    -- Find the closest player within the maximum distance
+    -- Find the closest player or part within the maximum distance
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= localPlayer then
             local character = playerCharacters:FindFirstChild(player.Name)
             if character then
-                local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-                if humanoidRootPart then
-                    local distance = (localPosition - humanoidRootPart.Position).Magnitude
-                    if distance < closestDistance then
-                        closestPlayer = player
-                        closestDistance = distance
+                -- Check all parts in the character model, including tools and their descendants
+                for _, descendant in ipairs(character:GetDescendants()) do
+                    if descendant:IsA("BasePart") then
+                        local distance = (localPosition - descendant.Position).Magnitude
+                        if distance < closestDistance then
+                            closestPlayer = player
+                            closestDistance = distance
+                        end
                     end
                 end
             end
@@ -87,8 +100,8 @@ RunService.Heartbeat:Connect(function()
                         VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.F, false, nil)
                         VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.F, false, nil)
 
-                        -- Debugging: Print the distance when "F" is pressed
-                        print("Pressed F for player:", closestPlayer.Name, "Distance:", closestDistance)
+                        -- Debugging: Print the distance and TimePosition when "F" is pressed
+                        print("Pressed F for player:", closestPlayer.Name, "Distance:", closestDistance, "TimePosition:", track.TimePosition)
 
                         -- Break out of the loop after detecting one animation
                         return
