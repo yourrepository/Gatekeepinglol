@@ -10,7 +10,7 @@ local playerCharacters = workspace:WaitForChild("PlayerCharacters")
 local MAX_DISTANCE = 12
 
 -- Toggle variable
-_G.AutoParryEnabled = not _G.AutoParryEnabled -- Toggles between true and false each time the script is executed
+_G.AutoParryEnabled = true -- Toggles between true and false each time the script is executed
 
 -- Function to check if an animation is monitored
 local animationSet = {} -- Animation set for lookup
