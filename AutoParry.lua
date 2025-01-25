@@ -4,7 +4,7 @@ local VirtualInputManager = game:GetService("VirtualInputManager")
 local HttpService = game:GetService("HttpService")
 
 -- Toggle state
-_G.isToggled = _G.isToggled or false -- false is enabled and true is disabled
+_G.isToggled = _G.isToggled or false -- false is enabled, true is disabled
 
 -- Function to toggle the script on or off
 local function toggleScript(state)
@@ -14,10 +14,6 @@ end
 
 -- Call this to toggle the script dynamically
 toggleScript(not _G.isToggled)
-
--- Current player
-local localPlayer = Players.LocalPlayer
-local playerCharacters = workspace:WaitForChild("PlayerCharacters")
 
 -- Maximum allowed distance
 local MAX_DISTANCE = 10
@@ -43,9 +39,25 @@ local function isMonitoredAnimation(animationId)
     return animationSet[animationId] ~= nil
 end
 
--- Cache the local character and its humanoid root part
+-- Local player and workspace character folder
+local localPlayer = Players.LocalPlayer
+local playerCharacters = workspace:WaitForChild("PlayerCharacters")
+
+-- Cache local character and humanoid root part
 local localCharacter = localPlayer.Character or localPlayer.CharacterAdded:Wait()
 local localHumanoidRootPart = localCharacter:WaitForChild("HumanoidRootPart")
+
+-- Update local character and root part on respawn
+localPlayer.CharacterAdded:Connect(function(character)
+    localCharacter = character
+    localHumanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    print("Local character updated on respawn")
+end)
+
+-- Monitor new players
+Players.PlayerAdded:Connect(function(player)
+    print("New player added:", player.Name)
+end)
 
 -- Optimize detection loop
 RunService.Heartbeat:Connect(function()
