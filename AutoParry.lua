@@ -3,7 +3,7 @@ local RunService = game:GetService("RunService")
 local VirtualInputManager = game:GetService("VirtualInputManager")
 
 -- Toggle state
-_G.isToggled = false -- false is enabled and true is disabled
+_G.isToggled = _G.isToggled or false -- false is enabled and true is disabled
 
 -- Function to toggle the script on or off
 local function toggleScript(state)
