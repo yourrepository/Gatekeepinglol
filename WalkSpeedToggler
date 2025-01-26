@@ -12,10 +12,23 @@ local lplr = player.LocalPlayer
 local chr = lplr.Character
 local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
 
+-- Define a function to remove all speed effects
+local function resetSpeedEffects()
+    if chr then
+        local rootPart = chr:FindFirstChild("HumanoidRootPart")
+        if rootPart then
+            rootPart.Velocity = Vector3.new(0, 0, 0) -- Reset velocity
+        end
+    end
+end
+
 -- Define a function to set the toggle explicitly
 _G.setTPWalking = function(state)
     tpwalking = state
     _G.tpwToggle = tpwalking -- Save the state globally
+    if not tpwalking then
+        resetSpeedEffects() -- Reset speed effects when tpwalking is disabled
+    end
     print("TPWalking is now:", tpwalking and "ON" or "OFF")
 end
 
@@ -27,5 +40,7 @@ while hb:Wait() and chr and hum and hum.Parent do
         else
             chr:TranslateBy(hum.MoveDirection)
         end
+    elseif not tpwalking then
+        resetSpeedEffects() -- Continuously ensure speed effects are cleared when disabled
     end
 end
