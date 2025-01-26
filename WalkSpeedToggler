@@ -1,46 +1,33 @@
 function isNumber(str)
-    if tonumber(str) ~= nil or str == 'inf' then
-        return true
-    end
+    return tonumber(str) ~= nil or str == "inf"
 end
 
-local tspeed = 0.3
+_G.SToggle = true
+
+local tspeed = _G.SToggle and 0.3 or -0.3  -- Setting tspeed based on SToggle condition
+
 local hb = game:GetService("RunService").Heartbeat
-local tpwalking = _G.tpwToggle or false -- Default to false
 local player = game:GetService("Players")
 local lplr = player.LocalPlayer
-local chr = lplr.Character
-local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+local chr = lplr.Character or lplr.CharacterAdded:Wait()
+local hum = chr:FindFirstChildWhichIsA("Humanoid")
 
--- Define a function to remove all speed effects
-local function resetSpeedEffects()
-    if chr then
-        local rootPart = chr:FindFirstChild("HumanoidRootPart")
-        if rootPart then
-            rootPart.Velocity = Vector3.new(0, 0, 0) -- Reset velocity
+-- Continuous teleport walking functionality
+task.spawn(function()
+    while hb:Wait() do
+        -- Revalidate character and humanoid
+        chr = lplr.Character or lplr.CharacterAdded:Wait()
+        hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+
+        if chr and hum and hum.Parent then
+            -- Perform teleport walking
+            if hum.MoveDirection.Magnitude > 0 then
+                if tspeed and isNumber(tspeed) then
+                    chr:TranslateBy(hum.MoveDirection * tonumber(tspeed))  -- Ensure TranslateBy works with your needs
+                else
+                    chr:TranslateBy(hum.MoveDirection)
+                end
+            end
         end
     end
-end
-
--- Define a function to set the toggle explicitly
-_G.setTPWalking = function(state)
-    tpwalking = state
-    _G.tpwToggle = tpwalking -- Save the state globally
-    if not tpwalking then
-        resetSpeedEffects() -- Reset speed effects when tpwalking is disabled
-    end
-    print("TPWalking is now:", tpwalking and "ON" or "OFF")
-end
-
--- Main loop for tpwalking
-while hb:Wait() and chr and hum and hum.Parent do
-    if tpwalking and hum.MoveDirection.Magnitude > 0 then
-        if tspeed and isNumber(tspeed) then
-            chr:TranslateBy(hum.MoveDirection * tonumber(tspeed))
-        else
-            chr:TranslateBy(hum.MoveDirection)
-        end
-    elseif not tpwalking then
-        resetSpeedEffects() -- Continuously ensure speed effects are cleared when disabled
-    end
-end
+end)
