@@ -2,7 +2,7 @@ function isNumber(str)
     return tonumber(str) ~= nil or str == "inf"
 end
 
-_G.SToggle = true
+_G.SToggle = false
 
 local tspeed = _G.SToggle and 0.3 or -0.3  -- Setting tspeed based on SToggle condition
 
