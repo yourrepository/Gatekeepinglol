@@ -11,7 +11,6 @@ local player = game:GetService("Players")
 local lplr = player.LocalPlayer
 local chr = lplr.Character
 local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
-local UIS = game:GetService("UserInputService") -- UserInputService for key input
 
 -- Define a function to set the toggle explicitly
 _G.setTPWalking = function(state)
@@ -19,17 +18,6 @@ _G.setTPWalking = function(state)
     _G.tpwToggle = tpwalking -- Save the state globally
     print("TPWalking is now:", tpwalking and "ON" or "OFF")
 end
-
--- Keybinding to toggle tpwalking on or off with the F key
-UIS.InputBegan:Connect(function(input, gameProcessed)
-    if not gameProcessed and input.KeyCode == Enum.KeyCode.F then
-        if tpwalking then
-            _G.setTPWalking(false) -- Turn off
-        else
-            _G.setTPWalking(true) -- Turn on
-        end
-    end
-end)
 
 -- Main loop for tpwalking
 while hb:Wait() and chr and hum and hum.Parent do
