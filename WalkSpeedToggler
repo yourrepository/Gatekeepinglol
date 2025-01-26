@@ -2,15 +2,23 @@ function isNumber(str)
     return tonumber(str) ~= nil or str == "inf"
 end
 
-_G.SToggle = _G.SToggle or true
+_G.SToggle = true
 
 local tspeed = _G.SToggle and 0.3 or -0.3  -- Setting tspeed based on SToggle condition
-
 local hb = game:GetService("RunService").Heartbeat
 local player = game:GetService("Players")
 local lplr = player.LocalPlayer
 local chr = lplr.Character or lplr.CharacterAdded:Wait()
 local hum = chr:FindFirstChildWhichIsA("Humanoid")
+
+-- Function to calculate the walk speed based on tspeed
+local function getWalkSpeed()
+    if tspeed == 0.3 then
+        return 16  -- Regular walking speed when SToggle is true
+    else
+        return 16  -- Set to regular walk speed when SToggle is false or -0.3
+    end
+end
 
 -- Continuous teleport walking functionality
 task.spawn(function()
@@ -20,6 +28,10 @@ task.spawn(function()
         hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
 
         if chr and hum and hum.Parent then
+            -- Calculate the walk speed
+            local walkSpeed = getWalkSpeed()
+            print("WalkSpeed: " .. walkSpeed)  -- Output the current walk speed
+
             -- Perform teleport walking
             if hum.MoveDirection.Magnitude > 0 then
                 if tspeed and isNumber(tspeed) then
