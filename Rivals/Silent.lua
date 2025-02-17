@@ -1,3 +1,4 @@
+-- paste this shit idc its gonna be patched soon enough
 local VirtualInputManager = game:GetService("VirtualInputManager")
 local runS = game:GetService("RunService")
 local pl = game:GetService("Players")
